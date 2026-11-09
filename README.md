@@ -1,17 +1,20 @@
+
 # Line Follower Robot — Competitive Robotics
 
-<p align="center">
-  **High-Performance Autonomous Line Following Robot**
-  <br>
-  <em>Embedded Systems · Robotics · Control Systems · PlatformIO</em>
-</p>
+<div align="center">
 
-<p align="center">
-  ![PlatformIO](https://img.shields.io/badge/PlatformIO-FF7F00?style=for-the-badge&logo=platformio&logoColor=white)
-  ![Arduino](https://img.shields.io/badge/Arduino_Nano-00979D?style=for-the-badge&logo=arduino&logoColor=white)
-  ![C++](https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
-  ![Embedded](https://img.shields.io/badge/Embedded_Systems-333333?style=for-the-badge)
-</p>
+  <strong>High-Performance Autonomous Line Following Robot</strong>
+
+  <em>Embedded Systems · Robotics · Control Systems · PlatformIO</em>
+
+  <br><br>
+
+  <img src="https://img.shields.io/badge/PlatformIO-FF7F00?style=for-the-badge&logo=platformio&logoColor=white" alt="PlatformIO"/>
+  <img src="https://img.shields.io/badge/Arduino_Nano-00979D?style=for-the-badge&logo=arduino&logoColor=white" alt="Arduino Nano"/>
+  <img src="https://img.shields.io/badge/C%2B%2B-00599C?style=for-the-badge&logo=cplusplus&logoColor=white" alt="C++"/>
+  <img src="https://img.shields.io/badge/Embedded_Systems-333333?style=for-the-badge" alt="Embedded Systems"/>
+
+</div>
 
 ---
 
