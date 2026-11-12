@@ -26,6 +26,8 @@ void LineFollower::begin() {
     _motors.begin();
 
     _state = RobotState::FOLLOWING_LINE;
+    _startTimeMs = millis();
+    _stateTimerMs = millis();
     _lastLoopTimeMicros = micros();
 }
 
@@ -112,6 +114,11 @@ void LineFollower::processFollowingLine(uint32_t elapsedMicros) {
 
     // 2. Verificação de Perda de Linha / GAP de 10 cm
     if (!_sensors.isLineDetected()) {
+        // Reseta o integral e o derivativo ao sair do seguimento: evita "chute" de windup
+        // ao reencontrar a linha após um gap ou após a busca inteligente.
+        _integral = 0.0f;
+        _filteredDerivative = 0.0f;
+
         if (abs((long)_lastError) < STRAIGHT_ERROR_THRESHOLD) {
             // Estava centralizado em reta: classifica como possível GAP de 10 cm
             _state = RobotState::GAP_CROSSING;
@@ -128,7 +135,9 @@ void LineFollower::processFollowingLine(uint32_t elapsedMicros) {
     // 3. Cálculo do Controlador PD/PID
     float error = (float)_sensors.getPosition();
     float dt = (float)elapsedMicros / 1000000.0f;
-    if (dt <= 0.0001f) {
+
+    // Blindagem contra micros() rollover (a cada ~71 min) e divisão por zero
+    if (dt <= 0.0001f || dt > 0.1f) {
         dt = 0.002f;
     }
 
@@ -138,7 +147,7 @@ void LineFollower::processFollowingLine(uint32_t elapsedMicros) {
 
     // Termo Integral opcional com anti-windup
     _integral += error * dt;
-    _integral = constrain(_integral, -1000.0f, 1000.0f);
+    _integral = constrain(_integral, -INTEGRAL_WINDUP_LIMIT, INTEGRAL_WINDUP_LIMIT);
 
     // Cálculo da sinal de correção
     float correction = (_kp * error) + (_kd * _filteredDerivative) + (_ki * _integral);
@@ -210,12 +219,16 @@ void LineFollower::processGapCrossing() {
 }
 
 void LineFollower::processSearchingLine() {
-    // Varredura controlada para o último lado conhecido da linha
-    if (_lastError < 0.0f) {
-        // Linha estava à esquerda: gira para a esquerda
+    // Varredura alternada: se a busca anterior não encontrou a linha no lado
+    // inicial, inverte a direção de varredura a cada SEARCH_SWEEP_TIME_MS.
+    uint32_t elapsed = millis() - _stateTimerMs;
+    bool sweepLeft = ((elapsed / SEARCH_SWEEP_TIME_MS) % 2) == 0;
+
+    if (sweepLeft) {
+        // Varredura para a esquerda
         _motors.setSpeeds(-SEARCH_SPEED, SEARCH_SPEED);
     } else {
-        // Linha estava à direita: gira para a direita
+        // Varredura para a direita
         _motors.setSpeeds(SEARCH_SPEED, -SEARCH_SPEED);
     }
 
@@ -226,7 +239,7 @@ void LineFollower::processSearchingLine() {
     }
 
     // Se esgotar o tempo limite de busca, para por segurança
-    if (millis() - _stateTimerMs > SEARCH_MAX_TIME_MS) {
+    if (elapsed > SEARCH_MAX_TIME_MS) {
         _state = RobotState::STOPPED;
     }
 }
@@ -287,6 +300,9 @@ void LineFollower::printDiagnostic() {
 
     Serial.print(F("STATE: "));
     Serial.println(getRobotStateName(_state));
+
+    Serial.print(F("LINE: "));
+    Serial.println(_sensors.isLineDetected() ? F("YES") : F("NO"));
 
     Serial.println(F("--------------------"));
 }

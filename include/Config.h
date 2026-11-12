@@ -105,6 +105,13 @@ const int16_t SENSOR_WEIGHTS[NUM_SENSORS] = {
 // 0.0 = sem filtragem (usa D puro); 1.0 = mantém valor anterior totalmente
 #define DERIVATIVE_ALPHA        0.65f
 
+// Limite de estouro do termo integral para anti-windup (evita "chute" ao sair de gaps/cruzamentos)
+#define INTEGRAL_WINDUP_LIMIT   800.0f
+
+// Tempo mínimo válido de ciclo de controle (proteção contra micros() rollover/divisão por zero)
+#define MIN_CYCLE_DT_US         100       // 100 us
+#define MAX_CYCLE_DT_US         100000    // 100 ms (ciclo inválido se ultrapassar)
+
 // ============================================================================
 // 5. DETECÇÃO E TRAVESSIA DE CRUZAMENTOS (90 GRAUS)
 // ============================================================================
